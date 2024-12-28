@@ -1,0 +1,5 @@
+# Real inputs
+/inputs/*.txt
+
+# Examples can be committed
+!/inputs/ex*.txt
