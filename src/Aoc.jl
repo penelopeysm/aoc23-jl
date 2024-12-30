@@ -1,11 +1,26 @@
 module Aoc
 
-using Test: @testset
+using Test: @testset, @test_broken, @test
 
-export @ex, @day, all_examples, all_days
+export @ex, @day
 
 include("utils.jl")
 include("Day01.jl")
+
+"""
+    @ex
+
+Run a testset containing all the examples.
+"""
+macro ex()
+    quote
+        @testset "AoC 2023 examples" verbose = true begin
+            @testset "Day $(lpad(day, 2, '0'))"  for day in 1:25
+                @ex day
+            end
+        end
+    end
+end
 
 """
     @ex day
@@ -13,7 +28,30 @@ include("Day01.jl")
 Run the programme on the example input for a given day.
 """
 macro ex(day)
-    :(getfield(getfield(Aoc, Symbol("Day" * lpad($(esc(day)), 2, '0'))), :example)())
+    @gensym module_name
+    quote
+        $module_name = Symbol("Day" * lpad($(esc(day)), 2, '0'))
+        try
+            getfield(getfield(Aoc, $module_name), :ex)()
+        catch e
+            @test_broken $module_name == :NotImplementedYet
+        end
+    end
+end
+
+"""
+    @day
+
+Run a testset containing all the days.
+"""
+macro day()
+    quote
+        @testset "AoC 2023 real inputs" verbose = true begin
+            @testset "Day $(lpad(day, 2, '0'))" for day in 1:25
+                @day day
+            end
+        end
+    end
 end
 
 """
@@ -22,33 +60,17 @@ end
 Run the programme on the true input for a given day.
 """
 macro day(day)
-    :(getfield(getfield(Aoc, Symbol("Day" * lpad($(esc(day)), 2, '0'))), :day)())
-end
-
-"""
-    all_examples()
-
-Run a testset containing all the examples.
-"""
-function all_examples()
-    @testset "AoC 2023 examples" verbose = true for day in 1:25
-        @testset "Day $(lpad(day, 2, '0'))" begin
-            @ex day
-        end
-    end
-end
-
-"""
-    all_days()
-
-Run a testset containing all the days.
-"""
-function all_days()
-    @testset "AoC 2023 real inputs" verbose = true for day in 1:25
-        @testset "Day $(lpad(day, 2, '0'))" begin
-            (part1, part2) = @day day
-            @info "Day $day, Part 1: $part1"
-            @info "Day $day, Part 2: $part2"
+    @gensym day_number module_name
+    quote
+        $day_number = $(esc(day))
+        $module_name = Symbol("Day" * lpad($day_number, 2, '0'))
+        try
+            (part1, part2) = getfield(getfield(Aoc, $module_name), :day)()
+            @info "Day " * string($day_number) * ", Part 1: $part1"
+            @info "Day " * string($day_number) * ", Part 2: $part2"
+        catch e
+            @test_broken $module_name == :NotImplementedYet
+            (nothing, nothing)
         end
     end
 end

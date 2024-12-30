@@ -26,9 +26,13 @@ Then in the Julia REPL:
 ```julia
 julia> using Aoc
 
-julia> @ex 1   # To run against example input
+julia> @ex     # Run all implemented days against example input
 
-julia> @day 1  # To run against real input
+julia> @ex 1   # Run Day 1 against example input
+
+julia> @day    # Run all implemented days against real input
+
+julia> @day 1  # Run Day 1 against real input
 ```
 
 Note that real input is not committed to the repository, in line with AoC rules. 
